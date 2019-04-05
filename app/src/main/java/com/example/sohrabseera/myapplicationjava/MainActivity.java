@@ -12,10 +12,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -76,8 +81,28 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
     }
 
+    Thread thread = new Thread(new Runnable() {
 
-public void getItemName()throws IOException {
+        @Override
+        public void run() {
+            try  {
+                //Your code goes here
+                URL url = new URL("https://api.upcitemdb.com/prod/trial/lookup?upc=674785680773");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                Log.e("Returned Scan", "Returned Scan");
+                JSONObject json = new JSONObject(readStream(in));
+                Log.e("JSON", json.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    });
+
+
+
+    public void getItemName()throws IOException {
     try {
         Log.e("Entered Scan", "Entered Scan");
         //Debugging
@@ -88,18 +113,16 @@ public void getItemName()throws IOException {
         try {
             Log.e("Test1", "Test1");
             try {
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                Log.e("Returned Scan", "Returned Scan");
-                readStream(in);
+                thread.start();
             }catch(Exception e){
-                Log.e("failed", "failed");
+                Log.e("failed", e.toString());
             }
         } finally {
             urlConnection.disconnect();
         }
     }catch(Exception e) {
-        System.out.println("Exception occurred");
+
+        Log.e("ERROR", "Exception occurred:" + e.toString());
     }
 }
     private String readStream(InputStream is) {
@@ -111,11 +134,40 @@ public void getItemName()throws IOException {
                 bo.write(i);
                 i = is.read();
             }
+            Log.e("Exited output", "Exited Output");
             return bo.toString();
         } catch (IOException e) {
-            Log.e("Entered Error on Output", "Entered Error on Output");
+            Log.e("Entered Error on Output", "Entered Error on Output: " + e.toString());
             return "Errorrrr";
         }
+
+
+
+//        InputStream inputStream = connection.getInputStream();
+//
+//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+//        StringBuilder builder = new StringBuilder();
+//        String line;
+//        while ((line = bufferedReader.readLine()) != null) {
+//            builder.append(line + "\n");
+//        }
+//
+//        try {
+//            JSONArray jsonArray = new JSONArray(builder.toString());
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                JSONObject json = jsonArray.getJSONObject(i);
+//
+//                if (!json.get("object").equals(null)) {
+//                    JSONArray objectJsonArray = json.getJSONArray("object");
+//                    for (int i = 0; i < objectJsonArray.length(); i++) {
+//                        JSONObject json = objectJsonArray.getJSONObject(i);
+//                    }
+//                }
+//            }
+//        }catch(Exception e){
+//
+//        }
+
     }
 
 
