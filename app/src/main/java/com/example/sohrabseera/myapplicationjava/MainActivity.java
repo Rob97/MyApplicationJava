@@ -1,9 +1,17 @@
 package com.example.sohrabseera.myapplicationjava;
 
+
+
+
+import com.microsoft.windowsazure.mobileservices.*;
+//import com.microsoft.windowsazure.mobileservices.table;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.microsoft.windowsazure.mobileservices.http.ServiceFilterResponse;
+import com.microsoft.windowsazure.mobileservices.table.TableOperationCallback;
+
 import android.content.Intent;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +31,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
@@ -30,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private Button nameBtn;
     private TextView formatTxt, contentTxt;
     private String scanContent;
+    private MobileServiceClient mClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +54,28 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         scanBtn.setOnClickListener(this);
         nameBtn.setOnClickListener(this);
+        try {
+            mClient = new MobileServiceClient(
+                    "https://allergychecker.azurewebsites.net",
+                    this
+            );
+           final TodoItem item = new TodoItem();
+            item.Text = "Awesome item";
+            mClient.getTable("baby food ingredients").top(1);
+           // JSONObject json1 = new JSONObject());
+          // Log.e("hello", .toString()) ;
+//            mClient.getTable(TodoItem.class).insert(item, new TableOperationCallback<item>() {
+//                public void onCompleted(TodoItem entity, Exception exception, ServiceFilterResponse response) {
+//                    if (exception == null) {
+//                        // Insert succeeded
+//                    } else {
+//                        // Insert failed
+//                    }
+//                }
+//            });
+        }catch(Exception e){
+            System.out.print(e.toString());
+        }
     }
 
     @Override
@@ -93,7 +126,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                 Log.e("Returned Scan", "Returned Scan");
                 JSONObject json = new JSONObject(readStream(in));
-                Log.e("JSON", json.toString());
+
+                List<String> list = new ArrayList<String>();
+                JSONArray array = json.getJSONArray("items");
+                for(int i = 0 ; i < array.length() ; i++){
+                    list.add(array.getJSONObject(i).getString("title"));
+                }
+
+
+                Log.e("JSON:", list.get(0));
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -141,6 +183,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             return "Errorrrr";
         }
 
+//        private void SqlQuery(){
+//            client = new AsyncDocumentClient.Builder()
+//                    .withServiceEndpoint(YOUR_COSMOS_DB_ENDPOINT)
+//                    .withMasterKeyOrResourceToken(YOUR_COSMOS_DB_MASTER_KEY)
+//                    .withConnectionPolicy(ConnectionPolicy.GetDefault())
+//                    .withConsistencyLevel(ConsistencyLevel.Eventual)
+//                    .build();
+//        }
 
 
 //        InputStream inputStream = connection.getInputStream();
